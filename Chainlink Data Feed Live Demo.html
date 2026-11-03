@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Chainlink Data Feed Live Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&family=Open+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="favicon-v2.jpg" />
+    <style>
+      :root {
+        --bg: #060d1a;
+        --card: #0e1b2e;
+        --card2: #132544;
+        --ink: #f2f6ff;
+        --mute: #9db0cc;
+        --blue: #2b5bde;
+        --cyan: #5bd0ff;
+        --warn: #ffc044;
+        --bad: #ff6b6b;
+        --ok: #4ade80;
+        --line: #1f3354;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: light) {
+        :root:not([data-theme="dark"]) {
+          --bg: #eef3fb;
+          --card: #fff;
+          --card2: #e3ebfa;
+          --ink: #0b1830;
+          --mute: #475a7a;
+          --blue: #2b5bde;
+          --cyan: #0a74b5;
+          --warn: #9a6200;
+          --bad: #c62828;
+          --ok: #16803c;
+          --line: #c9d6ee;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #060d1a;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Open Sans", system-ui, sans-serif;
+      }
+      body {
+        padding: 20px;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Montserrat", system-ui, sans-serif;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(24px, 4vw, 38px);
+        font-weight: 800;
+      }
+      .sub {
+        color: var(--cyan);
+        font-family: "Montserrat", sans-serif;
+        font-weight: 700;
+        margin: 6px 0 4px;
+      }
+      .note {
+        color: var(--mute);
+        font-size: 13px;
+        margin: 0 0 16px;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+      }
+      .bar label {
+        font-size: 13px;
+        color: var(--mute);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      button {
+        background: var(--blue);
+        color: #fff;
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font:
+          600 13px "Open Sans",
+          sans-serif;
+        cursor: pointer;
+      }
+      button.alt {
+        background: var(--card2);
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--cyan);
+        outline-offset: 2px;
+      }
+      input[type="range"] {
+        accent-color: var(--blue);
+      }
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .step {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+        min-width: 0;
+      }
+      .step.hi {
+        background: var(--card2);
+        border-color: var(--blue);
+      }
+      .step h3 {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .step small {
+        color: var(--mute);
+        display: block;
+        font-size: 11px;
+        margin-bottom: 8px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        padding: 3px 0;
+        border-bottom: 1px dashed var(--line);
+      }
+      .row b {
+        font-variant-numeric: tabular-nums;
+      }
+      .bad {
+        color: var(--bad);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .warn {
+        color: var(--warn);
+      }
+      .big {
+        font-family: "Montserrat", sans-serif;
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--cyan);
+      }
+      pre {
+        margin: 0;
+        font:
+          12px/1.5 ui-monospace,
+          Menlo,
+          monospace;
+        white-space: pre-wrap;
+        color: var(--ink);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .panel h3 {
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+      .hf {
+        font-family: "Montserrat", sans-serif;
+        font-size: 34px;
+        font-weight: 800;
+      }
+      .tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 6px;
+      }
+      .tag.ok {
+        background: rgba(74, 222, 128, 0.15);
+      }
+      .tag.bad {
+        background: rgba(255, 107, 107, 0.18);
+      }
+      .sec {
+        margin: 22px 0 10px;
+        font-size: 18px;
+      }
+      @media (max-width: 900px) {
+        .flow {
+          grid-template-columns: 1fr;
+        }
+        .two {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .step {
+          transition: border-color 0.3s;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chainlink Data Feed: live demo</h1>
+    <p class="sub">How a DeFi smart contract gets a real-world price</p>
+    <p class="note">
+      Simulation for teaching. Prices are generated in your browser, not read
+      from a blockchain. For the real feed, open data.chain.link (ETH/USD) next
+      to this page.
+    </p>
+
+    <div class="bar">
+      <button id="run" type="button">Pause feed</button>
+      <button id="step" class="alt" type="button">Tick once</button>
+      <label
+        >ETH market price
+        <input
+          id="mkt"
+          type="range"
+          min="1500"
+          max="4500"
+          step="10"
+          value="3000"
+        /><b id="mktv">$3,000</b></label
+      >
+      <label
+        ><input id="atk" type="checkbox" /> Attack: one exchange reports a price
+        40% too low</label
+      >
+      <label
+        ><input id="bad" type="checkbox" /> Make one Chainlink node
+        faulty</label
+      >
+    </div>
+
+    <div class="flow">
+      <div class="step">
+        <h3>1. Data sources</h3>
+        <small>Market / exchange APIs</small>
+        <div id="s1"></div>
+      </div>
+      <div class="step">
+        <h3>2. Chainlink nodes</h3>
+        <small>Each node reads all sources</small>
+        <div id="s2"></div>
+      </div>
+      <div class="step hi">
+        <h3>3. Chainlink DON</h3>
+        <small>Median of node reports (consensus)</small>
+        <div class="big" id="don">-</div>
+        <div id="s3" class="note"></div>
+      </div>
+      <div class="step">
+        <h3>4. Onchain report</h3>
+        <small>Written when price moves 0.5% or heartbeat ends</small>
+        <pre id="s4"></pre>
+      </div>
+      <div class="step">
+        <h3>5. Smart contract</h3>
+        <small>Reads latestRoundData()</small>
+        <div class="big" id="sc">-</div>
+        <div id="s5" class="note"></div>
+      </div>
+    </div>
+
+    <h2 class="sec">Why DeFi needs it: an Aave-style loan</h2>
+    <p class="note">
+      A user deposits 10 ETH and borrows USDC. The lending contract values the
+      collateral using an oracle price. Liquidation happens when the health
+      factor drops below 1 (liquidation threshold 82.5%).
+    </p>
+    <div class="bar">
+      <label
+        >Borrowed USDC
+        <input
+          id="debt"
+          type="range"
+          min="2000"
+          max="26000"
+          step="500"
+          value="18000"
+        /><b id="debtv">18,000</b></label
+      >
+    </div>
+    <div class="two">
+      <div class="panel">
+        <h3>Naive oracle (reads one exchange)</h3>
+        <div class="note">Price used: <b id="np"></b></div>
+        <div class="hf" id="nh"></div>
+        <span class="tag" id="nt"></span>
+      </div>
+      <div class="panel">
+        <h3>Chainlink Data Feed (median)</h3>
+        <div class="note">Price used: <b id="cp"></b></div>
+        <div class="hf" id="ch"></div>
+        <span class="tag" id="ct"></span>
+      </div>
+    </div>
+
+    <h2 class="sec">Talk track for the slide</h2>
+    <ol class="note" style="line-height: 1.7; padding-left: 20px">
+      <li>
+        Show the five stages above: sources, nodes, DON, onchain report, smart
+        contract.
+      </li>
+      <li>
+        Switch on the exchange attack. The naive oracle wrongly liquidates the
+        user; Chainlink's median ignores the bad source.
+      </li>
+      <li>
+        Switch on the faulty node. The median of the node reports still holds.
+      </li>
+      <li>
+        Drag the market price down. When the health factor passes below 1 on the
+        Chainlink side, that is a real liquidation.
+      </li>
+      <li>
+        Open data.chain.link to show the real ETH/USD feed, its update info and
+        contract address.
+      </li>
+    </ol>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const SRC = ["Binance", "Coinbase", "Kraken", "Bitstamp", "OKX"],
+        N = 7,
+        COLL = 10,
+        LT = 0.825;
+      let onchain = 3000,
+        round = 1,
+        since = 0,
+        reason = "initial",
+        running = true,
+        timer,
+        updAt = new Date(),
+        srcP = [],
+        nodeP = [],
+        don = 3000;
+      const med = (a) => {
+        const s = [...a].sort((x, y) => x - y),
+          m = s.length >> 1;
+        return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+      };
+      const f = (n) =>
+        n.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+      const rows = (a, l, bad) =>
+        a
+          .map(
+            (p, i) =>
+              `<div class="row"><span>${l(i)}</span><b class="${bad(i) ? "bad" : ""}">$${f(p)}</b></div>`,
+          )
+          .join("");
+      function tick() {
+        const t = +$("mkt").value;
+        srcP = SRC.map(() => t * (1 + (Math.random() - 0.5) * 0.002));
+        if ($("atk").checked) srcP[2] *= 0.6;
+        nodeP = Array.from(
+          { length: N },
+          () => med(srcP) * (1 + (Math.random() - 0.5) * 0.0006),
+        );
+        if ($("bad").checked) nodeP[3] *= 1.5;
+        don = med(nodeP);
+        since++;
+        const dev = Math.abs(don - onchain) / onchain;
+        if (dev >= 0.005 || since >= 10) {
+          reason =
+            dev >= 0.005
+              ? "deviation " + (dev * 100).toFixed(2) + "%"
+              : "heartbeat";
+          onchain = don;
+          round++;
+          since = 0;
+          updAt = new Date();
+        }
+        draw();
+      }
+      const hf = (p, d) => (COLL * p * LT) / d;
+      function health(hid, tid, p) {
+        const d = +$("debt").value,
+          h = hf(p, d);
+        $(hid).textContent = h.toFixed(2);
+        $(hid).className = "hf " + (h < 1 ? "bad" : "ok");
+        $(tid).textContent = h < 1 ? "LIQUIDATED" : "SAFE";
+        $(tid).className = "tag " + (h < 1 ? "bad" : "ok");
+      }
+      function draw() {
+        $("mktv").textContent = "$" + (+$("mkt").value).toLocaleString();
+        $("debtv").textContent = (+$("debt").value).toLocaleString();
+        $("s1").innerHTML = rows(
+          srcP,
+          (i) => SRC[i],
+          (i) => $("atk").checked && i === 2,
+        );
+        $("s2").innerHTML = rows(
+          nodeP,
+          (i) => "Node " + (i + 1),
+          (i) => $("bad").checked && i === 3,
+        );
+        $("don").textContent = "$" + f(don);
+        $("s3").textContent =
+          "Outliers are ignored because the median is used, not the average.";
+        $("s4").textContent =
+          `roundId: ${round}\nanswer: ${Math.round(onchain * 1e8)}\ndecimals: 8\nupdatedAt: ${updAt.toLocaleTimeString()}\ntrigger: ${reason}`;
+        $("sc").textContent = "$" + f(onchain);
+        $("s5").textContent = "DeFi rules execute using this price.";
+        const naive = srcP[2];
+        $("np").textContent = "$" + f(naive);
+        $("cp").textContent = "$" + f(onchain);
+        health("nh", "nt", naive);
+        health("ch", "ct", onchain);
+      }
+      function start() {
+        clearInterval(timer);
+        if (running) timer = setInterval(tick, 1500);
+      }
+      $("run").onclick = () => {
+        running = !running;
+        $("run").textContent = running ? "Pause feed" : "Resume feed";
+        start();
+      };
+      $("step").onclick = tick;
+      ["mkt", "atk", "bad", "debt"].forEach((i) =>
+        $(i).addEventListener("input", () => {
+          if (i !== "debt") tick();
+          else draw();
+        }),
+      );
+      tick();
+      start();
+    </script>
+  </body>
+</html>
